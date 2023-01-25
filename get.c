@@ -52,3 +52,33 @@ void getMask(unsigned int* mask) {
         if ((*mask) >= 0 && (*mask) <= 32) break; // mask can only be [0, 32]
     }
 }
+
+int getInterface() {
+    struct ifaddrs *addrs, *tmp;
+    if (getifaddrs(&addrs) != 0) {
+        perror("getifaddrs");
+        return -1;
+    }
+    printf("Available interfaces:\n");
+    tmp = addrs;
+    int numberOfInterfaces = 0;
+    while (tmp){
+        if (tmp->ifa_addr && tmp->ifa_addr->sa_family == AF_PACKET) {
+            printf("(%d): %s\n", numberOfInterfaces, tmp->ifa_name);
+            numberOfInterfaces++;
+        }
+        tmp = tmp->ifa_next;
+    }
+    printf("------------------------------\n");
+
+    int option;
+    printf("I: %d\n", numberOfInterfaces);
+    while (1) {
+        printf("Choose an interface: ");
+        scanf("%d", &option);
+        if (option >= 0 && option < numberOfInterfaces) break;
+    }
+
+    freeifaddrs(addrs);
+    return option;
+}
