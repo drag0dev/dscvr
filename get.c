@@ -1,13 +1,16 @@
 #include "get.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <ifaddrs.h>
-#include <errno.h>
 #include <netdb.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include <net/if.h>
+#include <net/if_arp.h>
 
 char* getIP() {
     char hostbuffer[256];
@@ -53,12 +56,15 @@ void getMask(unsigned int* mask) {
     }
 }
 
-int getInterface() {
+char* getInterface() {
     struct ifaddrs *addrs, *tmp;
+    char* res;
+
     if (getifaddrs(&addrs) != 0) {
         perror("getifaddrs");
-        return -1;
+        return NULL;
     }
+
     printf("Available interfaces:\n");
     tmp = addrs;
     int numberOfInterfaces = 0;
@@ -79,6 +85,19 @@ int getInterface() {
         if (option >= 0 && option < numberOfInterfaces) break;
     }
 
+    tmp = addrs;
+    while (option > 0) {
+        tmp = tmp->ifa_next;
+        option--;
+    }
+
+    int nameLen = strlen(tmp->ifa_name)+1;
+    res = malloc(sizeof(char) * nameLen);
+    if (res == NULL) return NULL;
+    memset(res, 0, nameLen);
+    memcpy(res, tmp->ifa_name, nameLen);
+    res[nameLen] = 0;
+
     freeifaddrs(addrs);
-    return option;
+    return res;
 }
