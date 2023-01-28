@@ -5,6 +5,7 @@
 #include <string.h>
 #include <errno.h>
 
+#include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <ifaddrs.h>
@@ -79,7 +80,6 @@ interfaceInfo* getInterface() {
     printf("------------------------------\n");
 
     int option;
-    printf("I: %d\n", numberOfInterfaces);
     while (1) {
         printf("Choose an interface: ");
         scanf("%d", &option);
@@ -94,7 +94,9 @@ interfaceInfo* getInterface() {
         free(res);
         return NULL;
     }
-    res->ifidex = option;
+
+    // NOTE: in other places functions from libc expect an index starting from 1
+    res->ifidex = option+1;
 
     tmp = addrs;
     while (option > 0) {
