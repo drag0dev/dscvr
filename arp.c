@@ -72,37 +72,28 @@ int send_arp(int fd, char* targetIp, interfaceInfo* ifInfo) {
 }
 
 int read_arp(int fd) {
+    // NOTE: reply is 46 bytes long, response with any other length is assumed to be wrong
     // TODO: timeout when we cant find a device/poll?
-    // TODO: handle when received more than 1024? is that even possible?
     unsigned char buffer[1024];
     ssize_t length = recvfrom(fd, buffer, 1024, 0, NULL, NULL);
-    int index;
+
     if (length == -1) {
         perror("recvfrom()");
         return -1;
     }
 
+    // reply is 46 bytes long, response with any other length is assumed to be something else - failed to find
+    if (length != 46) return -1;
+
     struct arp_header *arp_resp = (struct arp_header *) buffer;
 
-    struct in_addr sender_a;
-    memset(&sender_a, 0, sizeof(struct in_addr));
-    memcpy(&sender_a.s_addr, arp_resp->sender_ip, sizeof(uint32_t));
-
-    printf("arp opcode: %x\n", htons(arp_resp->opcode));
-    printf("Sender MAC: %02X:%02X:%02X:%02X:%02X:%02X\n",
+    printf("MAC: %02X:%02X:%02X:%02X:%02X:%02X\n",
           arp_resp->sender_mac[0],
           arp_resp->sender_mac[1],
           arp_resp->sender_mac[2],
           arp_resp->sender_mac[3],
           arp_resp->sender_mac[4],
           arp_resp->sender_mac[5]);
-    printf("Target MAC: %02X:%02X:%02X:%02X:%02X:%02X\n",
-          arp_resp->target_mac[0],
-          arp_resp->target_mac[1],
-          arp_resp->target_mac[2],
-          arp_resp->target_mac[3],
-          arp_resp->target_mac[4],
-          arp_resp->target_mac[5]);
 
     return 0;
 }
