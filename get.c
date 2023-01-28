@@ -11,6 +11,7 @@
 #include <netdb.h>
 #include <net/if.h>
 #include <net/if_arp.h>
+#include <netpacket/packet.h>
 
 char* getIP() {
     char hostbuffer[256];
@@ -56,9 +57,8 @@ void getMask(unsigned int* mask) {
     }
 }
 
-char* getInterface() {
+interfaceInfo* getInterface() {
     struct ifaddrs *addrs, *tmp;
-    char* res;
 
     if (getifaddrs(&addrs) != 0) {
         perror("getifaddrs");
@@ -85,18 +85,39 @@ char* getInterface() {
         if (option >= 0 && option < numberOfInterfaces) break;
     }
 
+    interfaceInfo* res = malloc(sizeof(interfaceInfo));
+    if (res == NULL) return NULL;
+    res->ip = malloc(sizeof(struct in_addr));
+    if (res->ip == NULL) {
+        free(res);
+        return NULL;
+    }
+    res->ifidex = option;
+
     tmp = addrs;
     while (option > 0) {
         tmp = tmp->ifa_next;
         option--;
     }
 
+    // interface name
     int nameLen = strlen(tmp->ifa_name)+1;
-    res = malloc(sizeof(char) * nameLen);
-    if (res == NULL) return NULL;
-    memset(res, 0, nameLen);
-    memcpy(res, tmp->ifa_name, nameLen);
-    res[nameLen] = 0;
+    res->interfaceName = malloc(sizeof(char) * nameLen);
+    if (res->interfaceName == NULL) {
+        free(res);
+        return NULL;
+    }
+    memset(res->interfaceName, 0, nameLen);
+    memcpy(res->interfaceName, tmp->ifa_name, nameLen);
+    res->interfaceName[nameLen] = 0;
+
+    // interface mac
+    struct sockaddr_ll *mac = (struct sockaddr_ll*)tmp->ifa_addr;
+    memcpy(res->mac, mac->sll_addr, 8);
+
+    // interface ip
+    struct sockaddr_in *ip = (struct sockaddr_in*)tmp->ifa_addr;
+    memcpy(res->ip, &ip->sin_addr, sizeof(struct sockaddr_in));
 
     freeifaddrs(addrs);
     return res;
