@@ -13,6 +13,13 @@
 #include <net/if_arp.h>
 #include <netpacket/packet.h>
 
+void clearSTDIN(){
+    int c;
+    do {
+        c = getchar();
+    } while (c != '\n' && c != EOF);
+}
+
 char* getIP() {
     char hostbuffer[256];
     char* IPBuffer;
@@ -46,13 +53,7 @@ void getMask(unsigned int* mask) {
         // get user input
         printf("Enter mask (0-32): ");
         scanf("%u", mask);
-
-        // clear stdin
-        int c;
-        do {
-            c = getchar();
-        } while (c != '\n' && c != EOF);
-
+        clearSTDIN();
         if ((*mask) >= 0 && (*mask) <= 32) break; // mask can only be [0, 32]
     }
 }
@@ -82,6 +83,7 @@ interfaceInfo* getInterface() {
     while (1) {
         printf("Choose an interface: ");
         scanf("%d", &option);
+        clearSTDIN();
         if (option >= 0 && option < numberOfInterfaces) break;
     }
 
