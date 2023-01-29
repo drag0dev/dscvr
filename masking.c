@@ -1,7 +1,6 @@
 #include "masking.h"
 #include "ip.h"
 #include <stdlib.h>
-#include <string.h>
 
 unsigned char createMask(int maskLen) {
     unsigned char mask = 0;
@@ -19,7 +18,7 @@ IPv4* getNetworkAddress(IPv4* src, unsigned int maskLen) {
     IPv4* res = malloc(sizeof(IPv4));
     if (res == NULL) return NULL;
 
-    unsigned short mask;
+    unsigned char mask;
     for (int i = 0; i < 4; ++i) {
         if (maskLen > 0) {
             mask = createMask(maskLen);
@@ -27,6 +26,24 @@ IPv4* getNetworkAddress(IPv4* src, unsigned int maskLen) {
             else maskLen = 0;
         } else mask = 0;
         res->octets[i] = src->octets[i] & mask;
+    }
+    return res;
+}
+
+IPv4* getBroadcastAddress(IPv4* src, unsigned int maskLen) {
+    IPv4* res = malloc(sizeof(IPv4));
+    if (res == NULL) return NULL;
+
+    unsigned char mask;
+    for (int i = 0; i < 4; ++i) {
+        if (maskLen > 0) {
+            mask = createMask(maskLen);
+            if (maskLen >= 8) maskLen -= 8;
+            else maskLen = 0;
+        } else mask = 0;
+        // by inverting the mask for network addr we get mask for broadcast addr
+        mask = ~mask;
+        res->octets[i] = src->octets[i] | mask;
     }
     return res;
 }
