@@ -47,3 +47,49 @@ IPv4* getBroadcastAddress(IPv4* src, unsigned int maskLen) {
     }
     return res;
 }
+
+int incrementIp(IPv4* src, IPv4* broadcast) {
+    // increment is achived by adding 1 to least signifact octet (last)
+    // and adding 0 with carry the the rest of the octets going from lowest to most significant
+
+    // add one to the least significant octet
+    __asm__( "addb $1, %0;"
+             "jnz end;"
+             "movb $255, %1;" // in case of overflow return 255 back
+             "end:"
+            : "=r" (src->octets[3]) // input
+            : "r" (src->octets[3]) // output
+            :
+    );
+
+    // adding 0 with carry to the rest
+    __asm__( "adcb $0, %0;"
+             "jnz end_one;"
+             "movb $255, %0;"
+             "end_one:"
+            : "=r" (src->octets[2])
+            : "r" (src->octets[2])
+    );
+
+    __asm__( "adcb $0, %0;"
+             "jnz end_two;"
+             "movb $255, %0;"
+             "end_two:"
+            : "=r" (src->octets[1])
+            : "r" (src->octets[1])
+    );
+
+    __asm__( "adcb $0, %0;"
+             "jnz end_three;"
+             "movb $255, %0;"
+             "end_three:"
+            : "=r" (src->octets[0])
+            : "r" (src->octets[0])
+    );
+
+    // check if its broadcast
+    for (int i = 0; i < 4; ++i) {
+        if (src->octets[i] != broadcast->octets[i]) return 0;
+    }
+    return -1;
+}
