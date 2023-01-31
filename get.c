@@ -30,21 +30,21 @@ char* getIP() {
     if (hostname == -1) {
         printf("Error getting hostname: ");
         perror("gethostname");
-        exit(-1);
+        return NULL;
     }
 
     host_entry = gethostbyname(hostbuffer);
     if (host_entry == NULL) {
         printf("Error getting host by name: ");
         perror("gethostbyname");
-        exit(-1);
+        return NULL;
     }
 
     IPBuffer = inet_ntoa(*((struct in_addr*)host_entry->h_addr_list[1]));
     if (IPBuffer == NULL){
         printf("Error convert to dot-dec format: ");
         perror("inet_ntoa");
-        exit(-1);
+        return NULL;
     }
     return IPBuffer;
 }

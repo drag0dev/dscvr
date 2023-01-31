@@ -89,7 +89,7 @@ int incrementIp(IPv4* src, IPv4* broadcast) {
 
     // check if its broadcast
     for (int i = 0; i < 4; ++i) {
-        if (src->octets[i] != broadcast->octets[i]) return 0;
+        if (src->octets[i] != broadcast->octets[i]) return 1;
     }
     return -1;
 }
