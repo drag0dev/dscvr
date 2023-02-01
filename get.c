@@ -5,6 +5,8 @@
 #include <string.h>
 #include <errno.h>
 
+#include <sys/ioctl.h>
+#include <sys/socket.h>
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -120,8 +122,36 @@ interfaceInfo* getInterface() {
     memcpy(res->mac, mac->sll_addr, 8);
 
     // interface ip
-    struct sockaddr_in *ip = (struct sockaddr_in*)tmp->ifa_addr;
-    memcpy(res->ip, &ip->sin_addr, sizeof(struct sockaddr_in));
+    struct ifreq ifr;
+    int interfaceNameLen = strlen(tmp->ifa_name);
+    if (interfaceNameLen < sizeof(ifr.ifr_name)) {
+        memcpy(ifr.ifr_name, tmp->ifa_name, interfaceNameLen);
+        ifr.ifr_name[interfaceNameLen] = 0;
+    } else{
+        printf("Error getting interface ip, interface name too long!");
+        free(res);
+        return NULL;
+    }
+
+    // get a temp socket
+    int fd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (fd == -1) {
+        printf("Error getting temp socket: ");
+        perror("bind");
+        free(res);
+        return NULL;
+    }
+
+    if (ioctl(fd, SIOCGIFADDR, &ifr) == -1) {
+        perror("ioctl");
+        close(fd);
+        free(res);
+        return NULL;
+    }
+    close(fd);
+
+    struct sockaddr_in* ipaddr = (struct sockaddr_in*)&ifr.ifr_addr;
+    res->interfaceName = inet_ntoa(ipaddr->sin_addr);
 
     freeifaddrs(addrs);
     return res;
