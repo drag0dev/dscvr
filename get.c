@@ -61,6 +61,7 @@ void getMask(unsigned int* mask) {
     }
 }
 
+// TODO: freeing addrs
 interfaceInfo* getInterface() {
     struct ifaddrs *addrs, *tmp;
 
@@ -151,7 +152,12 @@ interfaceInfo* getInterface() {
     close(fd);
 
     struct sockaddr_in* ipaddr = (struct sockaddr_in*)&ifr.ifr_addr;
-    res->interfaceName = inet_ntoa(ipaddr->sin_addr);
+    res->ip = malloc(sizeof(struct in_addr));
+    if (res->ip == NULL) {
+        free(res);
+        return NULL;
+    }
+    memcpy(res->ip, &ipaddr->sin_addr, sizeof(struct in_addr));
 
     freeifaddrs(addrs);
     return res;
