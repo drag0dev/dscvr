@@ -87,6 +87,11 @@ int read_arp(int fd) {
 
     struct arp_header *arp_resp = (struct arp_header *) buffer;
 
+    printf("IP: %d.%d.%d.%d  ",
+          arp_resp->sender_ip[0],
+          arp_resp->sender_ip[1],
+          arp_resp->sender_ip[2],
+          arp_resp->sender_ip[3]);
     printf("MAC: %02X:%02X:%02X:%02X:%02X:%02X\n",
           arp_resp->sender_mac[0],
           arp_resp->sender_mac[1],
