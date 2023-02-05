@@ -54,37 +54,18 @@ int incrementIp(IPv4* src, IPv4* broadcast) {
 
     // add one to the least significant octet
     __asm__( "addb $1, %0;"
-             "jnz end;"
-             "movb $255, %1;" // in case of overflow return 255 back
-             "end:"
-            : "=r" (src->octets[3]) // input
-            : "r" (src->octets[3]) // output
+             "adcb $0, %1;"
+             "adcb $0, %2;"
+             "adcb $0, %3;"
+            : "=r" (src->octets[3]), // input
+                "=r" (src->octets[2]),
+                "=r" (src->octets[1]),
+                "=r" (src->octets[0])
+            : "r" (src->octets[0]), // output
+              "r" (src->octets[1]),
+              "r" (src->octets[2]),
+              "r" (src->octets[3])
             :
-    );
-
-    // adding 0 with carry to the rest
-    __asm__( "adcb $0, %0;"
-             "jnz end_one;"
-             "movb $255, %0;"
-             "end_one:"
-            : "=r" (src->octets[2])
-            : "r" (src->octets[2])
-    );
-
-    __asm__( "adcb $0, %0;"
-             "jnz end_two;"
-             "movb $255, %0;"
-             "end_two:"
-            : "=r" (src->octets[1])
-            : "r" (src->octets[1])
-    );
-
-    __asm__( "adcb $0, %0;"
-             "jnz end_three;"
-             "movb $255, %0;"
-             "end_three:"
-            : "=r" (src->octets[0])
-            : "r" (src->octets[0])
     );
 
     // check if its broadcast
