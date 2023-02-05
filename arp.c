@@ -107,18 +107,24 @@ int read_arp(int fd) {
 }
 
 /* function for sending all arp requests */
-void sender(IPv4* ip, IPv4* broadcast, interfaceInfo* ifInfo, int* fd) {
+void* sender(void** args) {
+    IPv4* ip = args[0];
+    IPv4* broadcast = args[1];
+    interfaceInfo* ifInfo = args[2];
+    int* fd = args[3];
     char* ipStr;
     while (incrementIp(ip, broadcast) == 1) {
         ipStr = otoip(ip);
         send_arp(*fd, ipStr, ifInfo);
         free(ipStr);
     }
+    return NULL;
 }
 
 // TODO: timeout/user input for stopping?
-void receiver(int* fd) {
+void* receiver(int* fd) {
     while (1) {
         read_arp(*fd);
     }
+    return NULL;
 }
