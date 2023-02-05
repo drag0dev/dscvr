@@ -4,6 +4,8 @@
 #include "get.h"
 #include "ip.h"
 #include <stdint.h>
+#include <netpacket/packet.h>
+#include <netinet/if_ether.h>
 
 #define MAC_LENGTH 6
 #define IPV4_LENGTH 4
@@ -21,7 +23,7 @@ struct arp_header {
 };
 
 int bind_arp(int* fd, int ifidx);
-int send_arp(int fd, char* targetIp, interfaceInfo* ifInfo);
+int send_arp(int fd, char* targetIp, interfaceInfo* ifInfo, struct sockaddr_ll* addr, struct ether_arp* req);
 int read_arp(int fd);
 void* sender(void** args);
 void* receiver(int* fd);

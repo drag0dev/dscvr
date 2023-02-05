@@ -35,38 +35,13 @@ int bind_arp(int* fd, int ifidx) {
     return 0;
 }
 
-int send_arp(int fd, char* targetIp, interfaceInfo* ifInfo) {
-    struct sockaddr_ll addr;
-    memset(&addr, 0, sizeof(struct sockaddr_ll));
-    addr.sll_family = AF_PACKET;
-    addr.sll_ifindex = ifInfo->ifidex;
-    addr.sll_halen = ETHER_ADDR_LEN;
-    addr.sll_protocol = htons(ETH_P_ARP);
-
-    // broadcast address
-    const unsigned char etherBroadcastAddr[] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
-    memcpy(addr.sll_addr, etherBroadcastAddr, ETHER_ADDR_LEN);
-
-    struct ether_arp req;
-    req.arp_hrd = htons(ARPHRD_ETHER); // format of the hw address
-    req.arp_pro = htons(ETH_P_IP); // format of the protocol address
-    req.arp_hln = ETHER_ADDR_LEN; // hw address len
-    req.arp_pln = sizeof(in_addr_t); // protocol address len
-    req.arp_op = htons(ARPOP_REQUEST); // arp opcode
-    memset(&req.arp_tha, 0, sizeof(req.arp_tha)); // mac address 0 - broadcast
-
+int send_arp(int fd, char* targetIp, interfaceInfo* ifInfo, struct sockaddr_ll* addr, struct ether_arp* req) {
     struct in_addr targetIPAddr;
     memset(&targetIPAddr, 0, sizeof(struct in_addr));
     inet_aton(targetIp, &targetIPAddr); // it never fails since passed ips are generated internally
-    memcpy(&req.arp_tpa, &targetIPAddr.s_addr, sizeof(req.arp_tpa));
+    memcpy(&req->arp_tpa, &targetIPAddr.s_addr, sizeof(req->arp_tpa));
 
-    // source ip
-    memcpy(req.arp_spa, &ifInfo->ip->s_addr, sizeof(ifInfo->ip->s_addr));
-
-    // source mac
-    memcpy(&req.arp_sha, ifInfo->mac, sizeof(req.arp_sha));
-
-    if (sendto(fd, &req, sizeof(req), 0, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
+    if (sendto(fd, req, sizeof(*req), 0, (struct sockaddr*)addr, sizeof(*addr)) == -1) {
         printf("Error sending ARP requst\n");
         return -1;
     }
@@ -106,6 +81,27 @@ int read_arp(int fd) {
     return 0;
 }
 
+void makeStructs(struct sockaddr_ll* addr, struct ether_arp* req, interfaceInfo* ifInfo) {
+    // sockaddr_ll
+    memset(addr, 0, sizeof(struct sockaddr_ll));
+    addr->sll_family = AF_PACKET;
+    addr->sll_ifindex = ifInfo->ifidex;
+    addr->sll_halen = ETHER_ADDR_LEN;
+    addr->sll_protocol = htons(ETH_P_ARP);
+    const unsigned char etherBroadcastAddr[] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
+    memcpy(addr->sll_addr, etherBroadcastAddr, ETHER_ADDR_LEN);
+
+    // ether_arp
+    req->arp_hrd = htons(ARPHRD_ETHER); // format of the hw address
+    req->arp_pro = htons(ETH_P_IP); // format of the protocol address
+    req->arp_hln = ETHER_ADDR_LEN; // hw address len
+    req->arp_pln = sizeof(in_addr_t); // protocol address len
+    req->arp_op = htons(ARPOP_REQUEST); // arp opcode
+    memset(&req->arp_tha, 0, sizeof(req->arp_tha)); // mac address 0 - broadcast
+    memcpy(req->arp_spa, &ifInfo->ip->s_addr, sizeof(ifInfo->ip->s_addr)); // source ip
+    memcpy(&req->arp_sha, ifInfo->mac, sizeof(req->arp_sha)); // source mac
+}
+
 /* function for sending all arp requests */
 void* sender(void** args) {
     IPv4* ip = args[0];
@@ -113,9 +109,15 @@ void* sender(void** args) {
     interfaceInfo* ifInfo = args[2];
     int* fd = args[3];
     char* ipStr;
+
+    // avoid making these structures every time
+    struct sockaddr_ll addr;
+    struct ether_arp req;
+    makeStructs(&addr, &req, ifInfo);
+
     while (incrementIp(ip, broadcast) == 1) {
         ipStr = otoip(ip);
-        send_arp(*fd, ipStr, ifInfo);
+        send_arp(*fd, ipStr, ifInfo, &addr, &req);
         free(ipStr);
     }
     return NULL;
