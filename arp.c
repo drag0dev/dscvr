@@ -1,5 +1,8 @@
 #include "arp.h"
 #include "get.h"
+#include "ip.h"
+#include "masking.h"
+#include <stdlib.h>
 #include <netinet/in.h>
 #include <string.h>
 #include <stdio.h>
@@ -101,4 +104,21 @@ int read_arp(int fd) {
           arp_resp->sender_mac[5]);
 
     return 0;
+}
+
+/* function for sending all arp requests */
+void sender(IPv4* ip, IPv4* broadcast, interfaceInfo* ifInfo, int* fd) {
+    char* ipStr;
+    while (incrementIp(ip, broadcast) == 1) {
+        ipStr = otoip(ip);
+        send_arp(*fd, ipStr, ifInfo);
+        free(ipStr);
+    }
+}
+
+// TODO: timeout/user input for stopping?
+void receiver(int* fd) {
+    while (1) {
+        read_arp(*fd);
+    }
 }

@@ -2,6 +2,7 @@
 #define ARP_H_
 
 #include "get.h"
+#include "ip.h"
 #include <stdint.h>
 
 #define MAC_LENGTH 6
@@ -22,5 +23,7 @@ struct arp_header {
 int bind_arp(int* fd, int ifidx);
 int send_arp(int fd, char* targetIp, interfaceInfo* ifInfo);
 int read_arp(int fd);
+void sender(IPv4* ip, IPv4* broadcast, interfaceInfo* ifInfo, int* fd);
+void receiver(int* fd);
 
 #endif // ARP_H_
