@@ -1,5 +1,5 @@
 #include "masking.h"
-#include "ip.h".c
+#include "ip.h"
 #include <stdlib.h>
 
 unsigned char createMask(int maskLen) {

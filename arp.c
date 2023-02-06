@@ -34,7 +34,7 @@ int bind_arp(int* fd, int ifidx) {
     return 0;
 }
 
-int send_arp(int fd, char* targetIp, interfaceInfo* ifInfo, struct sockaddr_ll* addr, struct ether_arp* req) {
+int send_arp(int fd, char* targetIp, struct sockaddr_ll* addr, struct ether_arp* req) {
     struct in_addr targetIPAddr;
     memset(&targetIPAddr, 0, sizeof(struct in_addr));
     inet_aton(targetIp, &targetIPAddr); // it never fails since passed ips are generated internally
@@ -113,7 +113,7 @@ void* sender(void** args) {
 
     while (incrementIp(ip, broadcast) == 1) {
         ipStr = otoip(ip);
-        send_arp(*fd, ipStr, ifInfo, &addr, &req);
+        send_arp(*fd, ipStr, &addr, &req);
         free(ipStr);
     }
     return NULL;

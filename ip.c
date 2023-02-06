@@ -1,5 +1,6 @@
 #include "ip.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 void iptoo(IPv4* ip, char* ipString, int len) {
     int i = 0;

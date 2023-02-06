@@ -26,7 +26,7 @@ struct arp_header {
 int bind_arp(int* fd, int ifidx);
 
 /* function for sending arp request */
-int send_arp(int fd, char* targetIp, interfaceInfo* ifInfo, struct sockaddr_ll* addr, struct ether_arp* req);
+int send_arp(int fd, char* targetIp, struct sockaddr_ll* addr, struct ether_arp* req);
 
 /* function that tries reading from fd */
 int read_arp(int fd);
