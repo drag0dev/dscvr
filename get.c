@@ -32,6 +32,7 @@ interfaceInfo* getInterface() {
     struct ifaddrs *addrs, *tmp;
 
     if (getifaddrs(&addrs) != 0) {
+        printf("Error getting information about interfaces: ");
         perror("getifaddrs");
         return NULL;
     }
@@ -60,6 +61,7 @@ interfaceInfo* getInterface() {
     if (res == NULL) return NULL;
     res->ip = malloc(sizeof(struct in_addr));
     if (res->ip == NULL) {
+        printf("Not enough memory to allocate for interface info\n");
         free(res);
         freeifaddrs(addrs);
         return NULL;
@@ -78,6 +80,7 @@ interfaceInfo* getInterface() {
     int nameLen = strlen(tmp->ifa_name)+1;
     res->interfaceName = malloc(sizeof(char) * nameLen);
     if (res->interfaceName == NULL) {
+        printf("Not enough memory to allocate for interface name\n");
         free(res);
         freeifaddrs(addrs);
         return NULL;
@@ -97,7 +100,7 @@ interfaceInfo* getInterface() {
         memcpy(ifr.ifr_name, tmp->ifa_name, interfaceNameLen);
         ifr.ifr_name[interfaceNameLen] = 0;
     } else{
-        printf("Error getting interface ip, interface name too long!");
+        printf("Error getting interface ip, interface name too long\n");
         free(res);
         freeifaddrs(addrs);
         return NULL;
@@ -114,6 +117,7 @@ interfaceInfo* getInterface() {
     }
 
     if (ioctl(fd, SIOCGIFADDR, &ifr) == -1) {
+        printf("Error getting informatino about socket: ");
         perror("ioctl");
         close(fd);
         free(res);
@@ -125,6 +129,7 @@ interfaceInfo* getInterface() {
     struct sockaddr_in* ipaddr = (struct sockaddr_in*)&ifr.ifr_addr;
     res->ip = malloc(sizeof(struct in_addr));
     if (res->ip == NULL) {
+        printf("Not enough memory to allocate for ipaddr\n");
         free(res);
         freeifaddrs(addrs);
         return NULL;

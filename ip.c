@@ -20,7 +20,10 @@ void iptoo(IPv4* ip, char* ipString, int len) {
 
 char* otoip(IPv4* ip) {
     char* res = malloc(sizeof(char)*16);
-    if (res == NULL) return NULL;
+    if (res == NULL) {
+        printf("Not enough memory to allocate for ip information\n");
+        return NULL;
+    }
 
     unsigned char temp;
     int j = 0;

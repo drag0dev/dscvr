@@ -15,6 +15,7 @@ int bind_arp(int* fd, int ifidx) {
     // get fd
     *fd = socket(AF_PACKET, SOCK_DGRAM, htons(ETH_P_ARP));
     if (*fd < 0) {
+        printf("Error creating a new socket: ");
         perror("socket");
         return -1;
     }
@@ -26,6 +27,7 @@ int bind_arp(int* fd, int ifidx) {
     sll.sll_ifindex = ifidx;
 
     if (bind(*fd, (struct sockaddr*) &sll, sizeof(struct sockaddr_ll)) < 0){
+        printf("Error binding: ");
         perror("bind");
         return -1;
     }
