@@ -1,5 +1,4 @@
 #include "get.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,10 +21,10 @@ void clearSTDIN(){
 void getMask(unsigned int* mask) {
     while (1) {
         // get user input
-        printf("Enter mask (0-32): ");
+        printf("Enter mask (0-31): ");
         scanf("%u", mask);
         clearSTDIN();
-        if ((*mask) >= 0 && (*mask) <= 32) break; // mask can only be [0, 32]
+        if ((*mask) >= 0 && (*mask) <= 31) break; // mask can only be [0, 31]
     }
 }
 

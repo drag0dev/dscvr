@@ -12,7 +12,8 @@ typedef struct ifInfo {
     int ifidex;
 } interfaceInfo;
 
-/* user inputs mask [0, 32] in the passed mask */
+/* user inputs mask [0, 31] in the passed mask */
+/* nothing to find on a subnet with a mask 32 */
 void getMask(unsigned int* mask);
 
 /* returns which interface to use and its info*/
