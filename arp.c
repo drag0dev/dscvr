@@ -59,9 +59,9 @@ int read_arp(int fd) {
         perror("recvfrom()");
         return -1;
     }
-
-    // reply is 46 bytes long, response with any other length is assumed to be something else - failed to find
-    if (length != 46) return -1;
+    // reply length can change due to packets being tagget/not tagged, no point expecting a certain length
+    // the arp response it self is atleast 28 bytes, anything shorter is ignored
+    if (length < 28) return -1;
 
     struct arp_header *arp_resp = (struct arp_header *) buffer;
 
