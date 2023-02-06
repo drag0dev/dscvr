@@ -3,7 +3,6 @@
 
 #include "get.h"
 #include "ip.h"
-#include <stdint.h>
 #include <netpacket/packet.h>
 #include <netinet/if_ether.h>
 

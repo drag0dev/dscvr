@@ -1,12 +1,9 @@
 #include "arp.h"
-#include "get.h"
-#include "ip.h"
 #include "masking.h"
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <string.h>
 #include <stdio.h>
-#include <errno.h>
 #include <arpa/inet.h>
 #include <net/ethernet.h>
 #include <net/if.h>
@@ -45,13 +42,10 @@ int send_arp(int fd, char* targetIp, interfaceInfo* ifInfo, struct sockaddr_ll* 
         printf("Error sending ARP requst\n");
         return -1;
     }
-
     return 0;
 }
 
 int read_arp(int fd) {
-    // NOTE: reply is 46 bytes long, response with any other length is assumed to be wrong
-    // TODO: timeout when we cant find a device/poll?
     unsigned char buffer[1024];
     ssize_t length = recvfrom(fd, buffer, 1024, 0, NULL, NULL);
 

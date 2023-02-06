@@ -3,17 +3,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
 
 #include <sys/ioctl.h>
-#include <sys/socket.h>
 #include <unistd.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <netdb.h>
 #include <net/if.h>
-#include <net/if_arp.h>
 #include <netpacket/packet.h>
 
 void clearSTDIN(){
@@ -21,34 +17,6 @@ void clearSTDIN(){
     do {
         c = getchar();
     } while (c != '\n' && c != EOF);
-}
-
-char* getIP() {
-    char hostbuffer[256];
-    char* IPBuffer;
-    int hostname;
-    struct hostent* host_entry;
-    hostname = gethostname(hostbuffer, sizeof(hostbuffer));
-    if (hostname == -1) {
-        printf("Error getting hostname: ");
-        perror("gethostname");
-        return NULL;
-    }
-
-    host_entry = gethostbyname(hostbuffer);
-    if (host_entry == NULL) {
-        printf("Error getting host by name: ");
-        perror("gethostbyname");
-        return NULL;
-    }
-
-    IPBuffer = inet_ntoa(*((struct in_addr*)host_entry->h_addr_list[1]));
-    if (IPBuffer == NULL){
-        printf("Error convert to dot-dec format: ");
-        perror("inet_ntoa");
-        return NULL;
-    }
-    return IPBuffer;
 }
 
 void getMask(unsigned int* mask) {
@@ -61,7 +29,6 @@ void getMask(unsigned int* mask) {
     }
 }
 
-// TODO: freeing addrs
 interfaceInfo* getInterface() {
     struct ifaddrs *addrs, *tmp;
 
@@ -95,6 +62,7 @@ interfaceInfo* getInterface() {
     res->ip = malloc(sizeof(struct in_addr));
     if (res->ip == NULL) {
         free(res);
+        freeifaddrs(addrs);
         return NULL;
     }
 
@@ -112,6 +80,7 @@ interfaceInfo* getInterface() {
     res->interfaceName = malloc(sizeof(char) * nameLen);
     if (res->interfaceName == NULL) {
         free(res);
+        freeifaddrs(addrs);
         return NULL;
     }
     memset(res->interfaceName, 0, nameLen);
@@ -131,6 +100,7 @@ interfaceInfo* getInterface() {
     } else{
         printf("Error getting interface ip, interface name too long!");
         free(res);
+        freeifaddrs(addrs);
         return NULL;
     }
 
@@ -140,6 +110,7 @@ interfaceInfo* getInterface() {
         printf("Error getting temp socket: ");
         perror("bind");
         free(res);
+        freeifaddrs(addrs);
         return NULL;
     }
 
@@ -147,6 +118,7 @@ interfaceInfo* getInterface() {
         perror("ioctl");
         close(fd);
         free(res);
+        freeifaddrs(addrs);
         return NULL;
     }
     close(fd);
@@ -155,6 +127,7 @@ interfaceInfo* getInterface() {
     res->ip = malloc(sizeof(struct in_addr));
     if (res->ip == NULL) {
         free(res);
+        freeifaddrs(addrs);
         return NULL;
     }
     memcpy(res->ip, &ipaddr->sin_addr, sizeof(struct in_addr));
