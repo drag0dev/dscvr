@@ -57,10 +57,10 @@ int incrementIp(IPv4* src, IPv4* broadcast) {
              "adcb $0, %1;"
              "adcb $0, %2;"
              "adcb $0, %3;"
-            : "=r" (src->octets[3]), // input
-                "=r" (src->octets[2]),
-                "=r" (src->octets[1]),
-                "=r" (src->octets[0])
+            : "+r" (src->octets[3]), // input
+                "+r" (src->octets[2]),
+                "+r" (src->octets[1]),
+                "+r" (src->octets[0])
             : "r" (src->octets[0]), // output
               "r" (src->octets[1]),
               "r" (src->octets[2]),
