@@ -4,6 +4,7 @@
 
 #include <netinet/in.h>
 
+/* struct used for passing information around */
 typedef struct ifInfo {
     unsigned char mac[8];
     char* interfaceName;
@@ -16,4 +17,5 @@ void getMask(unsigned int* mask);
 
 /* returns which interface to use and its info*/
 interfaceInfo* getInterface();
+
 #endif // GET_H_
